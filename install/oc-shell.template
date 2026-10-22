@@ -1,0 +1,9 @@
+#!/bin/sh
+# Wrapper de shell para el agente. Ajusta las rutas a tu máquina.
+# Copia este archivo a ~/.local/bin/oc-shell y dale permisos de ejecución.
+PATH="$HOME/.local/bin:$PATH"
+JAVA_HOME="${JAVA_HOME:-$HOME/.local/opt/jdk21}"
+GHIDRA_INSTALL_DIR="${GHIDRA_INSTALL_DIR:-$HOME/.local/opt/ghidra_12.1.4_PUBLIC}"
+REA_JADX_MCP_JAR="${REA_JADX_MCP_JAR:-$HOME/.local/share/rea/android/jadx-headless-mcp-0.7.1-all.jar}"
+export PATH JAVA_HOME GHIDRA_INSTALL_DIR REA_JADX_MCP_JAR
+exec /bin/bash "$@"

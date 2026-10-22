@@ -1,0 +1,34 @@
+{
+  "_comment": "Definición neutral de los servidores MCP de Átomo. Cada harness tiene su propio formato; las rutas son marcadores que debes sustituir. Ver harnesses/*.md",
+  "servers": {
+    "rea": {
+      "transport": "stdio",
+      "command": ["node", "<NODE_BIN>/node", "<REA_ROOT>/scripts/rea.mjs", "mcp"],
+      "env": {
+        "JAVA_HOME": "<JAVA_HOME>",
+        "GHIDRA_INSTALL_DIR": "<GHIDRA_DIR>",
+        "REA_JADX_MCP_JAR": "<JADX_JAR>"
+      },
+      "optional_env": {
+        "JAVA_HOME": "solo para decompilación nativa (Ghidra)",
+        "GHIDRA_INSTALL_DIR": "solo para decompilación nativa",
+        "REA_JADX_MCP_JAR": "solo para Android (JADX)"
+      },
+      "purpose": "Análisis de binarios, Electron/JS, .NET, APK, WASM, SQLite, capturas de red.",
+      "requires_absolute_paths": true
+    },
+    "context7": {
+      "transport": "http",
+      "url": "https://mcp.context7.com/mcp",
+      "purpose": "Documentación actualizada de librerías y APIs.",
+      "notes": "Algunos harnesses necesitan reiniciar el cliente para verlo."
+    }
+  },
+  "graphify_optional": {
+    "note": "No es MCP por defecto. Construye un grafo por proyecto.",
+    "build": "graphify . --no-viz",
+    "query": "graphify query \"tu pregunta\" --budget 800",
+    "serve_mcp": "graphify . --mcp",
+    "requires": "Python >= 3.10 (instalable con uv, sin sudo)"
+  }
+}

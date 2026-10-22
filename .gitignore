@@ -1,0 +1,25 @@
+# Artefactos generados
+graphify-out/
+*.bak
+*.bak.*
+opencode.json.bak.*
+
+# Secretos (nunca deberían existir aquí, pero por si acaso)
+.env
+.env.*
+*.pem
+*.key
+id_rsa*
+id_ed25519*
+hosts.yml
+
+# Dependencias y cachés
+node_modules/
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Sistema
+.DS_Store
+Thumbs.db

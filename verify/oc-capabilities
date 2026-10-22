@@ -1,0 +1,80 @@
+#!/usr/bin/env bash
+# oc-capabilities — estado real de las capacidades instaladas en OpenCode (global).
+# Uso: oc-capabilities [--full]
+#   --full  además comprueba los motores de análisis (Ghidra, JADX). Tarda unos segundos.
+set -uo pipefail
+
+CLI="/opt/OpenCode/resources/opencode-cli"
+FULL=0
+[ "${1:-}" = "--full" ] && FULL=1
+
+hr() { printf '\n%s\n' "── $1 ──"; }
+
+hr "Binarios"
+for c in node npm git java rea; do
+  case "$c" in
+    java) p="$HOME/.local/opt/jdk21/bin/java" ;;
+    *)    p="$(command -v "$c" 2>/dev/null || true)" ;;
+  esac
+  if [ -n "$p" ] && [ -x "$p" ]; then
+    v="$("$p" --version 2>&1 | head -1)"
+    printf '  %-5s OK    %s\n' "$c" "$v"
+  else
+    printf '  %-5s FALTA\n' "$c"
+  fi
+done
+
+hr "Servidores MCP"
+if [ -x "$CLI" ]; then
+  "$CLI" mcp list 2>&1 | sed 's/^/  /'
+else
+  echo "  (no se encontró opencode-cli)"
+fi
+
+hr "Skills"
+{
+  for d in "$HOME/.config/opencode/skills"/*/ "$HOME/.agents/skills"/*/; do
+    [ -d "$d" ] || continue
+    [ -f "$d/SKILL.md" ] && basename "$d"
+  done
+} | sort -u | sed 's/^/  /'
+
+hr "Agentes propios"
+if ls "$HOME"/.config/opencode/agents/*.md >/dev/null 2>&1; then
+  for f in "$HOME"/.config/opencode/agents/*.md; do basename "$f" .md; done | sed 's/^/  /'
+else
+  echo "  (ninguno)"
+fi
+echo "  (plugin rea) rea, rea-analyst, rea-runtime, rea-auditor"
+
+hr "Comandos"
+for f in "$HOME"/.config/opencode/commands/*.md; do
+  [ -f "$f" ] && printf '  /%s\n' "$(basename "$f" .md)"
+done
+
+if [ "$FULL" = "1" ]; then
+  hr "Motores de análisis (REA)"
+  for prov in ghidra jadx; do
+    out="$(rea doctor --provider "$prov" --json 2>/dev/null)"
+    if [ -z "$out" ]; then
+      printf '  %-7s SIN RESPUESTA\n' "$prov"
+      continue
+    fi
+    printf '%s' "$out" | python3 -c "
+import json,sys
+p='$prov'
+try:
+    d=json.load(sys.stdin)
+except Exception:
+    print(f'  {p:<7} ERROR DE PARSEO'); raise SystemExit
+state='OK' if d.get('healthy') else 'FALLO'
+det=''
+for c in d.get('scope_checks',[]):
+    if c.get('name')==p: det=str(c.get('detail'))[:90]
+print(f'  {p:<7} {state}  {det}')
+"
+  done
+  echo "  (hopper, ida, kuna: no instalados — no son necesarios)"
+fi
+
+printf '\n'
